@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CineBook - Now Showing (Static Preview)</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="navbar">
+    <a href="index.html" class="brand">🎬 CineBook</a>
+    <nav>
+        <a href="index.html">Movies</a>
+        <a href="login.php">Login</a>
+        <a href="register.php" class="highlight">Register</a>
+    </nav>
+</div>
+<div class="container">
+    <h1 class="page-title">Now Showing</h1>
+
+    <div class="alert alert-success" style="margin-bottom:20px;">
+        This is a static HTML preview. For full booking functionality (login, search, real bookings),
+        run the PHP version with a local server (see README.md).
+    </div>
+
+    <form style="display:flex; gap:10px; margin-bottom:24px; flex-wrap:wrap;">
+        <input type="text" placeholder="Search movies..."
+               style="flex:1; min-width:200px; padding:10px; border-radius:6px; border:1px solid #2a2e40; background:#1a1d2b; color:#e8e8e8;">
+        <select style="padding:10px; border-radius:6px; border:1px solid #2a2e40; background:#1a1d2b; color:#e8e8e8;">
+            <option>All Genres</option>
+            <option>Sci-Fi</option>
+            <option>Comedy/Drama</option>
+            <option>Action</option>
+        </select>
+        <button type="submit" class="btn">Filter</button>
+    </form>
+
+    <div class="movie-grid">
+        <a href="movie.php?id=1" class="movie-card">
+            <img src="https://via.placeholder.com/220x320?text=Inception" alt="Inception">
+            <div class="info">
+                <h3>Inception</h3>
+                <p>Sci-Fi &middot; English</p>
+                <p>148 min</p>
+                <div class="price">₹180.00</div>
+            </div>
+        </a>
+        <a href="movie.php?id=2" class="movie-card">
+            <img src="https://via.placeholder.com/220x320?text=3+Idiots" alt="3 Idiots">
+            <div class="info">
+                <h3>3 Idiots</h3>
+                <p>Comedy/Drama &middot; Hindi</p>
+                <p>170 min</p>
+                <div class="price">₹150.00</div>
+            </div>
+        </a>
+        <a href="movie.php?id=3" class="movie-card">
+            <img src="https://via.placeholder.com/220x320?text=Vikram" alt="Vikram">
+            <div class="info">
+                <h3>Vikram</h3>
+                <p>Action &middot; Tamil</p>
+                <p>175 min</p>
+                <div class="price">₹160.00</div>
+            </div>
+        </a>
+        <a href="movie.php?id=4" class="movie-card">
+            <img src="https://via.placeholder.com/220x320?text=Interstellar" alt="Interstellar">
+            <div class="info">
+                <h3>Interstellar</h3>
+                <p>Sci-Fi &middot; English</p>
+                <p>169 min</p>
+                <div class="price">₹190.00</div>
+            </div>
+        </a>
+    </div>
+</div>
+<footer>&copy; 2026 CineBook - Movie Ticket Booking Management System</footer>
+</body>
+</html>
