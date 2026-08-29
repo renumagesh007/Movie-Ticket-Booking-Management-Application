@@ -1,79 +1,549 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CineBook - Now Showing (Static Preview)</title>
-<link rel="stylesheet" href="css/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CinemaX - Movie Ticket Booking</title>
+  <style>
+    :root {
+      --bg-color: #0b0f19;
+      --card-bg: #151c2c;
+      --accent-color: #38bdf8;
+      --accent-hover: #0284c7;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --seat-avail: #334155;
+      --seat-selected: #38bdf8;
+      --seat-booked: #ef4444;
+      --seat-vip: #f59e0b;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      color: var(--accent-color);
+      letter-spacing: 1px;
+    }
+
+    .main-container {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 25px;
+      max-width: 1100px;
+      width: 100%;
+    }
+
+    @media (max-width: 850px) {
+      .main-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+      border: 1px solid #1e293b;
+    }
+
+    /* Section Headers */
+    .section-title {
+      font-size: 1.1rem;
+      margin-bottom: 12px;
+      color: var(--accent-color);
+      border-bottom: 1px solid #1e293b;
+      padding-bottom: 6px;
+    }
+
+    /* Movie Selector */
+    .movies-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .movie-card {
+      background: #1e293b;
+      border-radius: 8px;
+      padding: 10px;
+      text-align: center;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .movie-card:hover {
+      border-color: #475569;
+    }
+
+    .movie-card.active {
+      border-color: var(--accent-color);
+      background: #0f172a;
+    }
+
+    .movie-card h4 {
+      font-size: 0.9rem;
+      margin-top: 5px;
+    }
+
+    .movie-card p {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    /* Showtime Buttons */
+    .time-selector {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 25px;
+      flex-wrap: wrap;
+    }
+
+    .time-btn {
+      background: #1e293b;
+      color: var(--text-main);
+      border: 1px solid #334155;
+      padding: 8px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+
+    .time-btn.active {
+      background: var(--accent-color);
+      color: #000;
+      font-weight: bold;
+      border-color: var(--accent-color);
+    }
+
+    /* Curved Cinema Screen */
+    .screen-container {
+      perspective: 400px;
+      margin: 20px 0 30px 0;
+      text-align: center;
+    }
+
+    .screen {
+      background: #f8fafc;
+      height: 15px;
+      width: 80%;
+      margin: 0 auto;
+      transform: rotateX(-30deg);
+      box-shadow: 0 8px 25px rgba(248, 250, 252, 0.5);
+      border-radius: 4px;
+    }
+
+    .screen-text {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    /* Seat Grid */
+    .seat-map {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .row-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      width: 20px;
+      text-align: center;
+    }
+
+    .seat {
+      width: 26px;
+      height: 24px;
+      background-color: var(--seat-avail);
+      border-top-left-radius: 8px;
+      border-top-right-radius: 8px;
+      cursor: pointer;
+      transition: transform 0.15s, background-color 0.15s;
+    }
+
+    .seat:hover:not(.booked) {
+      transform: scale(1.15);
+    }
+
+    .seat.selected {
+      background-color: var(--seat-selected);
+    }
+
+    .seat.booked {
+      background-color: var(--seat-booked);
+      cursor: not-allowed;
+    }
+
+    .seat.vip {
+      background-color: var(--seat-vip);
+    }
+
+    .seat-legend {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 20px;
+      font-size: 0.8rem;
+      flex-wrap: wrap;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legend-box {
+      width: 14px;
+      height: 14px;
+      border-radius: 3px;
+    }
+
+    /* Summary Sidebar */
+    .summary-card {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .summary-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      font-size: 0.9rem;
+    }
+
+    .summary-item span:last-child {
+      font-weight: 600;
+    }
+
+    .total-price {
+      font-size: 1.2rem;
+      color: var(--accent-color);
+      border-top: 1px dashed #334155;
+      padding-top: 12px;
+      margin-top: 10px;
+    }
+
+    .checkout-btn {
+      width: 100%;
+      background: var(--accent-color);
+      color: #0f172a;
+      border: none;
+      padding: 12px;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      margin-top: 15px;
+      transition: background 0.2s;
+    }
+
+    .checkout-btn:hover {
+      background: var(--accent-hover);
+    }
+
+    /* Digital Ticket Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.8);
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 100;
+    }
+
+    .modal-content {
+      background: var(--card-bg);
+      border-radius: 12px;
+      max-width: 420px;
+      width: 100%;
+      padding: 25px;
+      border: 1px solid var(--accent-color);
+      text-align: center;
+    }
+
+    .ticket-qr {
+      background: #fff;
+      color: #000;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 15px 0;
+      font-family: monospace;
+      font-size: 1.1rem;
+      letter-spacing: 4px;
+    }
+
+    .close-btn {
+      background: #334155;
+      color: #fff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+  </style>
 </head>
 <body>
-<div class="navbar">
-    <a href="index.html" class="brand">🎬 CineBook</a>
-    <nav>
-        <a href="index.html">Movies</a>
-        <a href="login.php">Login</a>
-        <a href="register.php" class="highlight">Register</a>
-    </nav>
-</div>
-<div class="container">
-    <h1 class="page-title">Now Showing</h1>
 
-    <div class="alert alert-success" style="margin-bottom:20px;">
-        This is a static HTML preview. For full booking functionality (login, search, real bookings),
-        run the PHP version with a local server (see README.md).
+  <header>
+    <h1>🎬 CinemaX Ticket Booking</h1>
+    <p style="color: var(--text-muted); font-size: 0.9rem;">Select a movie, showtime, and your seats</p>
+  </header>
+
+  <div class="main-container">
+    <!-- Left Column: Movies & Seating Map -->
+    <div>
+      <div class="card" style="margin-bottom: 20px;">
+        <div class="section-title">Select Movie</div>
+        <div class="movies-grid" id="moviesContainer"></div>
+
+        <div class="section-title">Select Showtime</div>
+        <div class="time-selector" id="timeContainer">
+          <button class="time-btn active">12:30 PM</button>
+          <button class="time-btn">04:15 PM</button>
+          <button class="time-btn">07:30 PM</button>
+          <button class="time-btn">10:45 PM</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-title">Select Seats</div>
+        
+        <div class="screen-container">
+          <div class="screen"></div>
+          <div class="screen-text">Screen Direction</div>
+        </div>
+
+        <div class="seat-map" id="seatMap"></div>
+
+        <div class="seat-legend">
+          <div class="legend-item"><div class="legend-box" style="background:var(--seat-avail)"></div> Standard ($10)</div>
+          <div class="legend-item"><div class="legend-box" style="background:var(--seat-vip)"></div> VIP ($15)</div>
+          <div class="legend-item"><div class="legend-box" style="background:var(--seat-selected)"></div> Selected</div>
+          <div class="legend-item"><div class="legend-box" style="background:var(--seat-booked)"></div> Booked</div>
+        </div>
+      </div>
     </div>
 
-    <form style="display:flex; gap:10px; margin-bottom:24px; flex-wrap:wrap;">
-        <input type="text" placeholder="Search movies..."
-               style="flex:1; min-width:200px; padding:10px; border-radius:6px; border:1px solid #2a2e40; background:#1a1d2b; color:#e8e8e8;">
-        <select style="padding:10px; border-radius:6px; border:1px solid #2a2e40; background:#1a1d2b; color:#e8e8e8;">
-            <option>All Genres</option>
-            <option>Sci-Fi</option>
-            <option>Comedy/Drama</option>
-            <option>Action</option>
-        </select>
-        <button type="submit" class="btn">Filter</button>
-    </form>
+    <!-- Right Column: Live Booking Summary -->
+    <div class="card summary-card">
+      <div>
+        <div class="section-title">Booking Summary</div>
+        
+        <div class="summary-item">
+          <span style="color:var(--text-muted)">Movie:</span>
+          <span id="sumMovie">-</span>
+        </div>
+        <div class="summary-item">
+          <span style="color:var(--text-muted)">Time:</span>
+          <span id="sumTime">12:30 PM</span>
+        </div>
+        <div class="summary-item">
+          <span style="color:var(--text-muted)">Selected Seats:</span>
+          <span id="sumSeats">None</span>
+        </div>
+        <div class="summary-item">
+          <span style="color:var(--text-muted)">Ticket Count:</span>
+          <span id="sumCount">0</span>
+        </div>
+        <div class="summary-item total-price">
+          <span>Total Price:</span>
+          <span id="sumTotal">$0</span>
+        </div>
+      </div>
 
-    <div class="movie-grid">
-        <a href="movie.php?id=1" class="movie-card">
-            <img src="https://via.placeholder.com/220x320?text=Inception" alt="Inception">
-            <div class="info">
-                <h3>Inception</h3>
-                <p>Sci-Fi &middot; English</p>
-                <p>148 min</p>
-                <div class="price">₹180.00</div>
-            </div>
-        </a>
-        <a href="movie.php?id=2" class="movie-card">
-            <img src="https://via.placeholder.com/220x320?text=3+Idiots" alt="3 Idiots">
-            <div class="info">
-                <h3>3 Idiots</h3>
-                <p>Comedy/Drama &middot; Hindi</p>
-                <p>170 min</p>
-                <div class="price">₹150.00</div>
-            </div>
-        </a>
-        <a href="movie.php?id=3" class="movie-card">
-            <img src="https://via.placeholder.com/220x320?text=Vikram" alt="Vikram">
-            <div class="info">
-                <h3>Vikram</h3>
-                <p>Action &middot; Tamil</p>
-                <p>175 min</p>
-                <div class="price">₹160.00</div>
-            </div>
-        </a>
-        <a href="movie.php?id=4" class="movie-card">
-            <img src="https://via.placeholder.com/220x320?text=Interstellar" alt="Interstellar">
-            <div class="info">
-                <h3>Interstellar</h3>
-                <p>Sci-Fi &middot; English</p>
-                <p>169 min</p>
-                <div class="price">₹190.00</div>
-            </div>
-        </a>
+      <div>
+        <button class="checkout-btn" id="checkoutBtn" onclick="openCheckout()">Confirm Booking</button>
+      </div>
     </div>
-</div>
-<footer>&copy; 2026 CineBook - Movie Ticket Booking Management System</footer>
+  </div>
+
+  <!-- Confirmation Receipt Modal -->
+  <div class="modal" id="ticketModal">
+    <div class="modal-content">
+      <h2 style="color: var(--accent-color);">🎟️ Booking Confirmed!</h2>
+      <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 5px;">Present this digital ticket at entry.</p>
+      
+      <div style="text-align: left; margin-top: 15px; font-size: 0.9rem;">
+        <p style="margin-bottom:5px;"><strong>Movie:</strong> <span id="ticketMovie"></span></p>
+        <p style="margin-bottom:5px;"><strong>Showtime:</strong> <span id="ticketTime"></span></p>
+        <p style="margin-bottom:5px;"><strong>Seats:</strong> <span id="ticketSeats"></span></p>
+        <p style="margin-bottom:5px;"><strong>Total Paid:</strong> <span id="ticketPrice"></span></p>
+      </div>
+
+      <div class="ticket-qr" id="ticketCode">CX-98421</div>
+
+      <button class="close-btn" onclick="closeModal()">Close & Book Again</button>
+    </div>
+  </div>
+
+  <script>
+    const movies = [
+      { id: 1, title: 'Inception', genre: 'Sci-Fi', price: 12 },
+      { id: 2, title: 'The Dark Knight', genre: 'Action', price: 14 },
+      { id: 3, title: 'Interstellar', genre: 'Sci-Fi', price: 13 },
+      { id: 4, title: 'Avatar', genre: 'Adventure', price: 15 }
+    ];
+
+    const rows = ['A', 'B', 'C', 'D', 'E'];
+    const seatsPerRow = 8;
+    const bookedSeatsSet = new Set(['A3', 'A4', 'C5', 'C6', 'D1']);
+
+    let currentMovie = movies[0];
+    let currentTime = '12:30 PM';
+    let selectedSeats = new Set();
+
+    // Render Movies Grid
+    const moviesContainer = document.getElementById('moviesContainer');
+    movies.forEach((m, idx) => {
+      const card = document.createElement('div');
+      card.className = `movie-card ${idx === 0 ? 'active' : ''}`;
+      card.innerHTML = `<h4>${m.title}</h4><p>${m.genre} • $${m.price}</p>`;
+      card.onclick = () => {
+        document.querySelectorAll('.movie-card').forEach(c => c.classList.remove('active'));
+        card.classList.add('active');
+        currentMovie = m;
+        updateSummary();
+      };
+      moviesContainer.appendChild(card);
+    });
+
+    // Render Time Options
+    const timeBtns = document.querySelectorAll('.time-btn');
+    timeBtns.forEach(btn => {
+      btn.onclick = () => {
+        timeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentTime = btn.innerText;
+        updateSummary();
+      };
+    });
+
+    // Render Seating Layout
+    const seatMap = document.getElementById('seatMap');
+    rows.forEach(r => {
+      const rowDiv = document.createElement('div');
+      rowDiv.className = 'row';
+
+      const label = document.createElement('div');
+      label.className = 'row-label';
+      label.innerText = r;
+      rowDiv.appendChild(label);
+
+      for (let i = 1; i <= seatsPerRow; i++) {
+        const seatId = `${r}${i}`;
+        const seat = document.createElement('div');
+        seat.className = 'seat';
+        
+        // Rows A & B designated as VIP
+        if (r === 'A' || r === 'B') seat.classList.add('vip');
+
+        if (bookedSeatsSet.has(seatId)) {
+          seat.classList.add('booked');
+        } else {
+          seat.onclick = () => toggleSeat(seat, seatId);
+        }
+
+        rowDiv.appendChild(seat);
+      }
+      seatMap.appendChild(rowDiv);
+    });
+
+    function toggleSeat(element, seatId) {
+      if (selectedSeats.has(seatId)) {
+        selectedSeats.delete(seatId);
+        element.classList.remove('selected');
+      } else {
+        selectedSeats.add(seatId);
+        element.classList.add('selected');
+      }
+      updateSummary();
+    }
+
+    function calculateTotal() {
+      let total = 0;
+      selectedSeats.forEach(seatId => {
+        const row = seatId[0];
+        const isVip = row === 'A' || row === 'B';
+        total += currentMovie.price + (isVip ? 5 : 0);
+      });
+      return total;
+    }
+
+    function updateSummary() {
+      document.getElementById('sumMovie').innerText = currentMovie.title;
+      document.getElementById('sumTime').innerText = currentTime;
+      document.getElementById('sumSeats').innerText = selectedSeats.size > 0 ? Array.from(selectedSeats).join(', ') : 'None';
+      document.getElementById('sumCount').innerText = selectedSeats.size;
+      document.getElementById('sumTotal').innerText = `$${calculateTotal()}`;
+    }
+
+    function openCheckout() {
+      if (selectedSeats.size === 0) {
+        alert('Please select at least one seat before booking!');
+        return;
+      }
+      document.getElementById('ticketMovie').innerText = currentMovie.title;
+      document.getElementById('ticketTime').innerText = currentTime;
+      document.getElementById('ticketSeats').innerText = Array.from(selectedSeats).join(', ');
+      document.getElementById('ticketPrice').innerText = `$${calculateTotal()}`;
+      document.getElementById('ticketCode').innerText = `CX-${Math.floor(10000 + Math.random() * 90000)}`;
+      document.getElementById('ticketModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+      // Save newly booked seats so they show as occupied
+      selectedSeats.forEach(seatId => bookedSeatsSet.add(seatId));
+      document.querySelectorAll('.seat.selected').forEach(el => {
+        el.classList.remove('selected');
+        el.classList.add('booked');
+        el.onclick = null;
+      });
+
+      selectedSeats.clear();
+      updateSummary();
+      document.getElementById('ticketModal').style.display = 'none';
+    }
+
+    updateSummary();
+  </script>
 </body>
 </html>
